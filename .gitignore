@@ -1,0 +1,31 @@
+# Data files — do NOT commit the full dataset (too large, may contain scraped data)
+data/dataset.csv
+data/sample.csv
+data/raw_cache.json
+data/class_distribution.png
+data/correlation_matrix.png
+
+# Keep the data folder itself
+!data/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
