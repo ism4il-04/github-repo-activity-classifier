@@ -48,10 +48,10 @@ This dataset supports a **binary supervised classification** task: predicting wh
 
 | Property | Value |
 |---|---|
-| Number of rows | ≥ 10,000 |
+| Number of rows | 15,000 |
 | Number of features | 19 (11 numeric, 2 categorical, 6 binary) |
 | Target variable | `is_inactive` |
-| Minority class (inactive) | ~10–20% (naturally imbalanced) |
+| Minority class (inactive) | ~15% (naturally imbalanced) |
 
 ---
 
@@ -89,14 +89,12 @@ This dataset supports a **binary supervised classification** task: predicting wh
 
 ### Class distribution
 
-> Fill in after collection. Expected distribution:
->
 > | Class | Count | % |
 > |---|---|---|
-> | 0 — active | ~9,000–10,500 | ~85–90% |
-> | 1 — inactive | ~1,000–2,000 | ~10–15% |
+> | 0 — active | 12,750 | 85.0% |
+> | 1 — inactive | 2,250 | 15.0% |
 
-*(Add a bar chart from `notebooks/01_discovery.ipynb` here)*
+*(See bar chart in `notebooks/01_discovery.ipynb` and `data/class_distribution.png`)*
 
 ---
 

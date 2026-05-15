@@ -42,11 +42,11 @@ pip install -r requirements.txt
 
 ## Data Collection
 
-Run the collection script to generate `data/dataset.csv` (~12,000 rows):
+Run the collection script to generate `data/dataset.csv` (~15,000 rows):
 
 ```bash
 cd src
-python data_collection.py --token YOUR_GITHUB_TOKEN --rows 12000 --out ../data/dataset.csv
+python data_collection.py --token YOUR_GITHUB_TOKEN --rows 15000 --out ../data/dataset.csv
 ```
 
 > You need a GitHub Personal Access Token with `public_repo` scope.  
@@ -54,8 +54,8 @@ python data_collection.py --token YOUR_GITHUB_TOKEN --rows 12000 --out ../data/d
 
 **Collection strategy:**
 - 7 star ranges × 10 programming languages = diverse, unbiased sample
-- Pass 1: 1,800 inactive repos (`pushed:<cutoff`)
-- Pass 2: 10,200 active repos (`pushed:>cutoff`)
+- Pass 1: 2,250 inactive repos (`pushed:<cutoff`)
+- Pass 2: 12,750 active repos (`pushed:>cutoff`)
 - Automatically resumes from cache if interrupted
 
 ---
@@ -64,7 +64,7 @@ python data_collection.py --token YOUR_GITHUB_TOKEN --rows 12000 --out ../data/d
 
 | Property | Value |
 |---|---|
-| Rows | 12,000 |
+| Rows | 15,000 |
 | Features | 19 (11 numeric, 2 categorical, 6 binary) |
 | Target | `is_inactive` (binary: 0 = active, 1 = inactive) |
 | Class ratio | ~85% active / ~15% inactive |
