@@ -8,7 +8,9 @@
 
 ## Project Overview
 
-Binary supervised classification task: **predict whether a GitHub repository will become inactive** (no push in 180+ days) based on publicly available metadata.
+Binary supervised classification task: **predict whether a GitHub repository used as a dependency** (≥ 1 star, ≥ 30 days old) **will become inactive** (no push in 180+ days) based on publicly available metadata.
+
+**Target population:** Public GitHub repos with at least 1 star and 30 days of existence — proxy for libraries actually used in production. Student projects, empty forks, and test repos are explicitly out of scope.
 
 **Business value:** OSS dependency managers and security teams (Snyk, Dependabot, etc.) need to flag potentially abandoned libraries before they become risks in production software.
 
