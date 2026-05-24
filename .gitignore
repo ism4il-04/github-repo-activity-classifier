@@ -29,3 +29,15 @@ venv/
 .DS_Store
 Thumbs.db
 
+# --- Ajouts pour la Phase 2 ---
+# Ne pas push les gros datasets à la racine
+*.csv
+
+# Ne pas push les données transformées
+data/processed/
+
+# Ne pas push les modèles et pipelines compilés
+models/
+
+# Ignorer le PDF des consignes
+*.pdf
