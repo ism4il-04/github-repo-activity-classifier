@@ -2,8 +2,9 @@
 data/dataset.csv
 data/sample.csv
 data/raw_cache.json
-data/class_distribution.png
-data/correlation_matrix.png
+
+# Generated plots (outputs of notebooks — reproducible, not versionned)
+data/*.png
 
 # Keep the data folder itself
 !data/.gitkeep
@@ -39,5 +40,6 @@ data/processed/
 # Ne pas push les modèles et pipelines compilés
 models/
 
-# Ignorer le PDF des consignes
+# Ignorer le PDF des consignes et les archives
 *.pdf
+*.zip
