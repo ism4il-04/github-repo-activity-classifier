@@ -1,89 +1,163 @@
-# GitHub Repository Activity Dataset — Phase 1
+# 🐙 GitHub Repository Activity Classifier
 
-**ENSA Tétouan | Machine Learning 2025-2026**  
-**Authors:** Ismail LYAMANI, Abdellatif OUMHELLA, Mohammed Aymane SABER  
-**Professor:** Pr. Y. EL YOUNOUSSI
-
----
-
-## Project Overview
-
-Binary supervised classification task: **predict whether a GitHub repository used as a dependency** (≥ 1 star, ≥ 30 days old) **will become inactive** (no push in 180+ days) based on publicly available metadata.
-
-**Target population:** Public GitHub repos with at least 1 star and 30 days of existence — proxy for libraries actually used in production. Student projects, empty forks, and test repos are explicitly out of scope.
-
-**Business value:** OSS dependency managers and security teams (Snyk, Dependabot, etc.) need to flag potentially abandoned libraries before they become risks in production software.
+**ENSA Tétouan | Projet de Fin de Module Machine Learning 2025-2026**  
+*Enseigné par Pr. Y. EL YOUNOUSSI*  
+*Auteurs : Ismail LYAMANI, Abdellatif OUMHELLA, Mohammed Aymane SABER*
 
 ---
 
-## Repository Structure
+## 📌 Présentation du Projet
 
+Ce projet implémente un classifieur de réseaux supervisés binaires pour prédire si un dépôt GitHub (utilisé comme dépendance dans un projet informatique) va devenir **inactif ou abandonné** (aucune modification/push dans les 180 derniers jours) à partir de ses caractéristiques publiques. Cette solution permet aux équipes de sécurité et de gestion de dépendances logicielles (ex: Dependabot, Snyk) de détecter proactivement les librairies abandonnées qui présentent des risques de sécurité (failles de dépendance non corrigées).
+
+### Architecture Globale
 ```
-Project_Phase_1/
-├── src/
-│   └── data_collection.py     # Data collection script (GitHub REST API)
-├── notebooks/
-│   └── 01_discovery.ipynb     # Exploratory Data Analysis
+github-repo-activity-classifier/
+├── app/
+│   ├── api.py                 # API REST FastAPI (Endpoints et Preprocessing)
+│   └── ui.py                  # Interface Utilisateur Streamlit (Formulaire et Mode Batch)
 ├── data/
-│   └── .gitkeep               # Folder placeholder (dataset not committed)
-├── cadrage.md                 # Project framing document
-├── DATASET.md                 # Dataset documentation
-├── requirements.txt           # Python dependencies
+│   ├── processed/             # Splits de données (train.csv, validation.csv, test.csv)
+│   └── dataset.csv            # Dataset complet (~15 000 lignes)
+├── models/
+│   ├── final_model.joblib     # Pipeline complet (preprocessor + GradientBoosting)
+│   └── final_model_metadata.json # Seuil critique (0.05) et métriques de performance
+├── notebooks/
+│   ├── 01_discovery.ipynb     # Phase 1: EDA Initiale
+│   ├── 02_eda.ipynb           # Phase 2: EDA Avancée
+│   ├── 03_preprocessing.ipynb # Phase 2: Nettoyage et Pipeline
+│   ├── 04_modeling.ipynb      # Phase 3: Modélisation et CV
+│   ├── 05_tuning.ipynb        # Phase 3: GridSearch/RandomSearch
+│   └── 06_evaluation.ipynb    # Phase 3: Évaluation et Seuil Optimal
+├── tests/
+│   └── test_api.py            # Tests unitaires Pytest pour l'API REST
+├── .dockerignore
+├── docker-compose.yml         # Orchestration multi-conteneur (API et UI)
+├── Dockerfile                 # Conteneurisation de l'API et de l'UI (python:3.11-slim)
+├── requirements.txt           # Dépendances figées du projet
 └── README.md
 ```
 
 ---
 
-## Setup
+## 🖥️ Interface Utilisateur Streamlit
+
+L'interface utilisateur comporte trois sections principales permettant d'interagir facilement avec le modèle :
+1. **Prédiction Unitaire** : Saisie manuelle de toutes les caractéristiques pour classifier un dépôt.
+2. **Prédiction par Lot** : Dépôt d'un fichier CSV pour obtenir instantanément des prédictions en masse avec visualisation statistique.
+3. **Informations Modèle & Contexte Métier** : Explication de la matrice de coûts asymétriques et du seuil optimal décisionnel de 0.05.
+
+### Captures d'Écran de l'Interface
+
+#### 🔍 Formulaire de Prédiction Unitaire
+![Prediction Form UI Mockup](file:///C:/Users/PC/.gemini/antigravity-ide/brain/83205a1c-3eea-460f-90cb-b8a5a5e29ca5/ui_predict_form_1780261382225.png)
+
+#### 📁 Résumé Statistique du Traitement par Lot
+![Batch Prediction UI Mockup](file:///C:/Users/PC/.gemini/antigravity-ide/brain/83205a1c-3eea-460f-90cb-b8a5a5e29ca5/ui_batch_mode_1780261451863.png)
+
+---
+
+## 🚀 Guide de Démarrage Rapide
+
+### 🐳 Option A : Démarrage avec Docker (Recommandé)
+
+Docker Compose orchestre automatiquement le conteneur API FastAPI (port 8000) et le conteneur UI Streamlit (port 8501) sur le même réseau virtuel.
+
+1. Installez Docker et Docker Compose.
+2. Exécutez la commande suivante à la racine du projet :
+   ```bash
+   docker-compose up --build
+   ```
+3. Accédez aux services :
+   - **Interface Utilisateur (Streamlit) :** [http://localhost:8501](http://localhost:8501)
+   - **API REST (Documentation Swagger) :** [http://localhost:8000/docs](http://localhost:8000/docs)
+   - **Vérification de l'état (Healthcheck) :** [http://localhost:8000/health](http://localhost:8000/health)
+
+---
+
+### 💻 Option B : Démarrage en Local (Sans Docker)
+
+1. Créez un environnement virtuel et installez les dépendances :
+   ```bash
+   python -m venv venv
+   source venv/Scripts/activate  # Sur Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+2. **Démarrer l'API REST :**
+   ```bash
+   uvicorn app.api:app --host 127.0.0.1 --port 8000 --reload
+   ```
+3. **Démarrer l'Interface Utilisateur :**
+   ```bash
+   streamlit run app/ui.py --server.port 8501 --server.address 127.0.0.1
+   ```
+
+---
+
+## 🧪 Exécution des Tests Unitaires
+
+Les tests unitaires vérifient la robustesse des schémas Pydantic, la logique de Feature Engineering et le calcul des probabilités de l'API.
 
 ```bash
-pip install -r requirements.txt
+python -m pytest tests/
 ```
 
 ---
 
-## Data Collection
+## 📖 Endpoints REST & Exemples d'Utilisation
 
-Run the collection script to generate `data/dataset.csv` (~15,000 rows):
+### Endpoints Disponibles
+- `GET /` : Accueil avec métadonnées de l'API.
+- `GET /health` : Vérification du statut du modèle.
+- `GET /model/info` : Informations sur le Gradient Boosting et les métriques de la phase 3.
+- `POST /predict` : Reçoit les caractéristiques brutes et renvoie la classification.
+- `POST /predict/batch` : Reçoit un fichier CSV et renvoie le même fichier enrichi des prédictions.
+
+### Exemple de Requête unitaire (Curl)
 
 ```bash
-cd src
-python data_collection.py --token YOUR_GITHUB_TOKEN --rows 15000 --out ../data/dataset.csv
+curl -X POST http://localhost:8000/predict \
+     -H "Content-Type: application/json" \
+     -d '{
+       "stars": 12,
+       "forks": 4,
+       "open_issues": 1,
+       "watchers": 12,
+       "size_kb": 1500.0,
+       "repo_age_days": 800,
+       "contributor_count": 5,
+       "avg_issue_response_hours": 24.0,
+       "engagement_rate": 0.02,
+       "stars_forks_ratio": 3.0,
+       "language": "Python",
+       "license": "MIT License",
+       "has_description": true,
+       "has_homepage": false,
+       "has_wiki": true,
+       "has_projects": true,
+       "is_fork": false
+     }'
 ```
 
-> You need a GitHub Personal Access Token with `public_repo` scope.  
-> Get one at: GitHub → Settings → Developer settings → Personal access tokens
-
-**Collection strategy:**
-- 7 star ranges × 10 programming languages = diverse, unbiased sample
-- Pass 1: 2,250 inactive repos (`pushed:<cutoff`)
-- Pass 2: 12,750 active repos (`pushed:>cutoff`)
-- Automatically resumes from cache if interrupted
-
----
-
-## Dataset
-
-| Property | Value |
-|---|---|
-| Rows | 15,000 |
-| Features | 19 (11 numeric, 2 categorical, 6 binary) |
-| Target | `is_inactive` (binary: 0 = active, 1 = inactive) |
-| Class ratio | ~85% active / ~15% inactive |
-
-See [`DATASET.md`](DATASET.md) for full schema and documentation.
+#### Réponse de l'API
+```json
+{
+  "prediction": "inactif",
+  "probability": 0.1624,
+  "threshold": 0.05,
+  "confidence": "medium"
+}
+```
 
 ---
 
-## Exploratory Analysis
+## ⚠️ Limites du Modèle
 
-Open and run all cells in `notebooks/01_discovery.ipynb` after collecting the dataset.
+1. **Sensibilité au bruit** : Le nombre de contributeurs est plafonné à 100 en raison des limites de l'API de recherche GitHub.
+2. **Estimation des délais de réponse** : Le délai de réponse aux issues est calculé sur un historique restreint de 20 issues fermées, ce qui peut masquer les évolutions récentes.
+3. **Taux de faux positifs élevé** : Avec un seuil de **0.05** (choisi pour maximiser la détection des failles de sécurité, coût de 10 000 € d'un Faux Négatif), environ la moitié des alertes s'avèrent être des projets actifs. Ce choix métier favorise la prudence.
 
 ---
 
-## Target Variable Definition
-
-A repository is labeled **inactive (1)** if it has not been pushed to in the **last 180 days** at the time of collection.
-
-> ⚠️ `days_since_last_push` and `archived` must be **dropped before modeling** to avoid data leakage.
-
+## 📜 Licence
+Ce projet est sous licence **MIT License**. Pour plus de détails, voir le code source.

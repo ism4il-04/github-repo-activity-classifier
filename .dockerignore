@@ -1,0 +1,21 @@
+# Git
+.git
+.gitignore
+
+# Jupyter & local caches
+.ipynb_checkpoints
+*.ipynb
+.gemini
+
+# Python local assets
+__pycache__
+*.pyc
+*.pyo
+venv
+.venv
+.env
+
+# Large dataset caches and extra models
+data/raw_cache.json
+models/best_pipeline_before_tuning.joblib
+models/tuned_pipeline.joblib

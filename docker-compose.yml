@@ -1,0 +1,39 @@
+services:
+  api:
+    build: .
+    container_name: ml_project_api
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_PATH=/app/models/final_model.joblib
+      - METADATA_PATH=/app/models/final_model_metadata.json
+      - LOG_LEVEL=info
+    command: uvicorn app.api:app --host 0.0.0.0 --port 8000
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: always
+
+  ui:
+    build: .
+    container_name: ml_project_ui
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    command: streamlit run app/ui.py --server.port 8501 --server.address 0.0.0.0
+    networks:
+      - app_network
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: always
+
+networks:
+  app_network:
+    driver: bridge
