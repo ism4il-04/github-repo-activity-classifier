@@ -49,7 +49,7 @@ STATIC_MODEL_INFO: dict[str, Any] = {
     },
 }
 
-LANGUAGES = [
+PROG_LANGUAGES = [
     "Python", "JavaScript", "Java", "C++", "Go",
     "Ruby", "Rust", "TypeScript", "PHP", "C", "Other",
 ]
@@ -60,10 +60,359 @@ LICENSES = [
     "Mozilla Public License 2.0", "GNU Affero General Public License v3.0", "Other",
 ]
 
+# ── Internationalization (EN / FR) ───────────────────────────────────────────
+TRANSLATIONS: dict[str, dict[str, str]] = {
+    "en": {
+        "page_title": "RepoGuard — Activity Classifier",
+        "sidebar_subtitle": "GitHub Activity Classifier",
+        "lang_label": "Language / Langue",
+        "api_online": "API Online",
+        "api_offline": "API Offline",
+        "demo_mode": "Demo mode — mock predictions enabled",
+        "model_label": "Model",
+        "label_recall": "Recall",
+        "footer_caption": "ENSA Tétouan · ML 2025–2026",
+        "hero_title": "Repository Risk Dashboard",
+        "hero_subtitle": "Predict inactivity risk for open-source repositories using public GitHub metadata.",
+        "hero_badge": "Gradient Boosting",
+        "tab_single": "Single Prediction",
+        "tab_batch": "Batch Prediction",
+        "tab_context": "Model Context",
+        "section_input": "Input",
+        "input_card_title": "Repository features",
+        "input_card_sub": "Enter GitHub metadata to run a single detection.",
+        "field_stars": "Stars",
+        "field_forks": "Forks",
+        "field_watchers": "Watchers",
+        "field_open_issues": "Open issues",
+        "field_contributors": "Contributors",
+        "field_contributors_help": "Use -1 if unknown (GitHub caps at 100).",
+        "field_size_kb": "Size (KB)",
+        "field_age_days": "Age (days)",
+        "field_engagement_rate": "Engagement rate",
+        "field_stars_forks_ratio": "Stars / forks ratio",
+        "field_avg_issue_response": "Avg. issue response (h)",
+        "field_primary_language": "Primary language",
+        "field_license": "License",
+        "section_flags": "Flags",
+        "flag_description": "Has description",
+        "flag_wiki": "Wiki enabled",
+        "flag_fork": "Is a fork",
+        "flag_homepage": "Has homepage",
+        "flag_projects": "Projects enabled",
+        "btn_detect": "Detect",
+        "how_it_works_title": "How it works",
+        "how_it_works_body": (
+            "The model scores inactivity probability against an optimal threshold "
+            "(τ* = 5%) tuned for supply-chain risk — favoring recall over precision."
+        ),
+        "api_offline_error": "API is offline. Start with: `uvicorn app.api:app --port 8000`",
+        "spinner_detect": "Running detection model…",
+        "section_result": "Result",
+        "alert_inactive_high": (
+            "**Inactive repository detected** — abandonment probability **{prob:.1f}%**. "
+            "Review before adopting as a dependency."
+        ),
+        "alert_inactive_other": (
+            "**Possible inactivity** — probability **{prob:.1f}%** ({conf} confidence). "
+            "Manual review recommended."
+        ),
+        "alert_active_borderline": (
+            "**Active** with borderline signal — probability **{prob:.1f}%** ({conf} confidence). "
+            "Monitor periodically."
+        ),
+        "alert_active_ok": (
+            "**Repository appears active** — inactivity probability **{prob:.1f}%** ({conf} confidence)."
+        ),
+        "metric_inactivity_prob": "Inactivity probability",
+        "metric_threshold": "Decision threshold (τ*)",
+        "metric_confidence": "Confidence",
+        "metric_verdict": "Verdict",
+        "verdict_actif": "Active",
+        "verdict_inactif": "Inactive",
+        "delta_risk": "Risk",
+        "delta_ok": "OK",
+        "conf_high": "High",
+        "conf_medium": "Medium",
+        "conf_low": "Low",
+        "api_error": "API error ({code}): {detail}",
+        "api_unreachable": "Cannot reach API at {url}: {err}",
+        "prediction_failed": "Prediction failed: {err}",
+        "section_batch_upload": "Batch upload",
+        "batch_dataset_title": "Dataset",
+        "batch_dataset_sub": "Upload a CSV with one repository per row.",
+        "batch_upload_help": "Required columns match the single-prediction form fields.",
+        "required_columns": "Required columns",
+        "preview_rows": "Preview · {n:,} rows",
+        "btn_batch_run": "Run batch detection",
+        "batch_api_offline": "API is offline. Start the backend first.",
+        "progress_init": "Initializing batch pipeline…",
+        "progress_upload": "Uploading to API…",
+        "progress_complete": "Complete",
+        "batch_complete": "Batch complete",
+        "spinner_batch": "Processing {n:,} repositories…",
+        "section_summary": "Summary",
+        "metric_total": "Total",
+        "metric_active": "Active",
+        "metric_inactive": "Inactive",
+        "metric_alert_rate": "Alert rate",
+        "section_results": "Results",
+        "col_stars": "Stars",
+        "col_language": "Language",
+        "col_inactivity_prob": "Inactivity prob.",
+        "col_prediction": "Prediction",
+        "col_prediction_help": "actif = maintained · inactif = at risk",
+        "col_confidence": "Confidence",
+        "btn_download": "Download results CSV",
+        "file_process_error": "Could not process file: {err}",
+        "mission_eyebrow": "Mission",
+        "mission_title": "Supply-chain inactivity detection",
+        "mission_body": (
+            "Abandoned open-source dependencies expose teams to unpatched CVEs and "
+            "breaking changes. RepoGuard flags repositories using only public GitHub "
+            "signals — no clone or commit history required."
+        ),
+        "expander_architecture": "Architecture & feature pipeline",
+        "architecture_body": """
+**Pipeline (CRISP-DM)**
+1. GitHub REST metadata extraction
+2. Feature engineering (engagement rate, maturity bins, license/language encoding)
+3. `HistGradientBoostingClassifier` with `scale_pos_weight`
+4. Threshold optimization via asymmetric business cost (FN ≫ FP)
+
+**Inputs:** 15 raw + derived features per repository.
+
+**Output:** `actif` / `inactif` + calibrated probability vs. τ* = 0.05.
+""",
+        "expander_faq": "FAQ",
+        "faq_body": """
+**Why τ* = 5% and not 50%?**  
+A missed inactive repo (false negative) costs ~167× more than a false alert.
+Lowering the threshold maximizes recall for security audits.
+
+**Can I use this without the API?**  
+Set `USE_MOCK_API=true` (default) to explore the UI with simulated responses.
+
+**What file format for batch mode?**  
+CSV with the same columns as the single-prediction form.
+""",
+        "section_test_perf": "Test-set performance",
+        "metric_accuracy": "Accuracy",
+        "metric_f1": "F1-Score",
+        "metric_roc_auc": "ROC-AUC",
+        "metric_precision": "Precision",
+        "metric_recall_default": "Recall (τ=0.50)",
+        "metric_pr_auc": "PR-AUC",
+        "section_deployed_threshold": "Deployed threshold (τ*)",
+        "metric_optimal_tau": "Optimal τ*",
+        "metric_recall_tau": "Recall @ τ*",
+        "cost_reduction_eyebrow": "Business cost reduction",
+        "cost_savings_text": (
+            'Estimated savings: <strong style="color:#4ade80">{pct:.1f}%</strong> '
+            "on held-out test set."
+        ),
+        "expander_costs": "Asymmetric error costs",
+        "costs_body": """
+| Error | Impact | Est. cost |
+|-------|--------|-----------|
+| **False negative** | Inactive repo marked active — no alert | ~10,000 EUR |
+| **False positive** | Unnecessary manual review (~30 min) | ~60 EUR |
+
+The classifier is tuned to minimize expected business cost, not raw accuracy.
+""",
+        "upload_csv_label": "Drop CSV here",
+    },
+    "fr": {
+        "page_title": "RepoGuard — Classificateur d'activité",
+        "sidebar_subtitle": "Classificateur d'activité GitHub",
+        "lang_label": "Langue / Language",
+        "api_online": "API en ligne",
+        "api_offline": "API hors ligne",
+        "demo_mode": "Mode démo — prédictions simulées activées",
+        "model_label": "Modèle",
+        "label_recall": "Rappel",
+        "footer_caption": "ENSA Tétouan · ML 2025–2026",
+        "hero_title": "Tableau de bord des risques dépôt",
+        "hero_subtitle": (
+            "Estimez le risque d'inactivité des dépôts open source à partir "
+            "des métadonnées publiques GitHub."
+        ),
+        "hero_badge": "Gradient Boosting",
+        "tab_single": "Prédiction unitaire",
+        "tab_batch": "Prédiction par lot",
+        "tab_context": "Contexte du modèle",
+        "section_input": "Saisie",
+        "input_card_title": "Caractéristiques du dépôt",
+        "input_card_sub": "Saisissez les métadonnées GitHub pour lancer une détection.",
+        "field_stars": "Étoiles",
+        "field_forks": "Forks",
+        "field_watchers": "Observateurs",
+        "field_open_issues": "Issues ouvertes",
+        "field_contributors": "Contributeurs",
+        "field_contributors_help": "Utilisez -1 si inconnu (plafond GitHub : 100).",
+        "field_size_kb": "Taille (Ko)",
+        "field_age_days": "Âge (jours)",
+        "field_engagement_rate": "Taux d'engagement",
+        "field_stars_forks_ratio": "Ratio étoiles / forks",
+        "field_avg_issue_response": "Délai moy. de réponse issues (h)",
+        "field_primary_language": "Langage principal",
+        "field_license": "Licence",
+        "section_flags": "Indicateurs",
+        "flag_description": "Description renseignée",
+        "flag_wiki": "Wiki activé",
+        "flag_fork": "Est un fork",
+        "flag_homepage": "Page d'accueil",
+        "flag_projects": "Projets activés",
+        "btn_detect": "Détecter",
+        "how_it_works_title": "Fonctionnement",
+        "how_it_works_body": (
+            "Le modèle estime la probabilité d'inactivité par rapport au seuil optimal "
+            "(τ* = 5 %), calibré pour la chaîne d'approvisionnement — priorité au rappel."
+        ),
+        "api_offline_error": "API hors ligne. Démarrez avec : `uvicorn app.api:app --port 8000`",
+        "spinner_detect": "Exécution du modèle de détection…",
+        "section_result": "Résultat",
+        "alert_inactive_high": (
+            "**Dépôt inactif détecté** — probabilité d'abandon **{prob:.1f} %**. "
+            "Vérifiez avant d'utiliser comme dépendance."
+        ),
+        "alert_inactive_other": (
+            "**Inactivité possible** — probabilité **{prob:.1f} %** (confiance {conf}). "
+            "Revue manuelle recommandée."
+        ),
+        "alert_active_borderline": (
+            "**Actif** avec signal limite — probabilité **{prob:.1f} %** (confiance {conf}). "
+            "Surveillez périodiquement."
+        ),
+        "alert_active_ok": (
+            "**Dépôt semble actif** — probabilité d'inactivité **{prob:.1f} %** (confiance {conf})."
+        ),
+        "metric_inactivity_prob": "Probabilité d'inactivité",
+        "metric_threshold": "Seuil de décision (τ*)",
+        "metric_confidence": "Confiance",
+        "metric_verdict": "Verdict",
+        "verdict_actif": "Actif",
+        "verdict_inactif": "Inactif",
+        "delta_risk": "Risque",
+        "delta_ok": "OK",
+        "conf_high": "Élevée",
+        "conf_medium": "Moyenne",
+        "conf_low": "Faible",
+        "api_error": "Erreur API ({code}) : {detail}",
+        "api_unreachable": "Impossible de joindre l'API à {url} : {err}",
+        "prediction_failed": "Échec de la prédiction : {err}",
+        "section_batch_upload": "Import par lot",
+        "batch_dataset_title": "Jeu de données",
+        "batch_dataset_sub": "Importez un CSV avec un dépôt par ligne.",
+        "batch_upload_help": "Les colonnes requises correspondent au formulaire unitaire.",
+        "required_columns": "Colonnes requises",
+        "preview_rows": "Aperçu · {n:,} lignes",
+        "btn_batch_run": "Lancer la détection par lot",
+        "batch_api_offline": "API hors ligne. Démarrez d'abord le backend.",
+        "progress_init": "Initialisation du pipeline par lot…",
+        "progress_upload": "Envoi vers l'API…",
+        "progress_complete": "Terminé",
+        "batch_complete": "Lot terminé",
+        "spinner_batch": "Traitement de {n:,} dépôts…",
+        "section_summary": "Synthèse",
+        "metric_total": "Total",
+        "metric_active": "Actifs",
+        "metric_inactive": "Inactifs",
+        "metric_alert_rate": "Taux d'alerte",
+        "section_results": "Résultats",
+        "col_stars": "Étoiles",
+        "col_language": "Langage",
+        "col_inactivity_prob": "Prob. inactivité",
+        "col_prediction": "Prédiction",
+        "col_prediction_help": "actif = maintenu · inactif = à risque",
+        "col_confidence": "Confiance",
+        "btn_download": "Télécharger le CSV des résultats",
+        "file_process_error": "Impossible de traiter le fichier : {err}",
+        "mission_eyebrow": "Mission",
+        "mission_title": "Détection d'inactivité en chaîne d'approvisionnement",
+        "mission_body": (
+            "Les dépendances open source abandonnées exposent aux CVE non corrigées "
+            "et aux ruptures de compatibilité. RepoGuard signale les dépôts à partir "
+            "des seuls signaux GitHub publics — sans clonage ni historique de commits."
+        ),
+        "expander_architecture": "Architecture et pipeline de features",
+        "architecture_body": """
+**Pipeline (CRISP-DM)**
+1. Extraction des métadonnées via l'API REST GitHub
+2. Feature engineering (taux d'engagement, classes de maturité, encodage licence/langage)
+3. `HistGradientBoostingClassifier` avec `scale_pos_weight`
+4. Optimisation du seuil via coût métier asymétrique (FN ≫ FP)
+
+**Entrées :** 15 features brutes et dérivées par dépôt.
+
+**Sortie :** `actif` / `inactif` + probabilité calibrée vs. τ* = 0,05.
+""",
+        "expander_faq": "FAQ",
+        "faq_body": """
+**Pourquoi τ* = 5 % et non 50 % ?**  
+Un dépôt inactif non détecté (faux négatif) coûte ~167× plus qu'une fausse alerte.
+Abaisser le seuil maximise le rappel pour les audits de sécurité.
+
+**Utiliser l'interface sans API ?**  
+Définissez `USE_MOCK_API=true` (par défaut) pour des réponses simulées.
+
+**Format pour le mode lot ?**  
+CSV avec les mêmes colonnes que le formulaire unitaire.
+""",
+        "section_test_perf": "Performances sur le jeu de test",
+        "metric_accuracy": "Exactitude",
+        "metric_f1": "F1-Score",
+        "metric_roc_auc": "ROC-AUC",
+        "metric_precision": "Précision",
+        "metric_recall_default": "Rappel (τ=0,50)",
+        "metric_pr_auc": "PR-AUC",
+        "section_deployed_threshold": "Seuil déployé (τ*)",
+        "metric_optimal_tau": "τ* optimal",
+        "metric_recall_tau": "Rappel @ τ*",
+        "cost_reduction_eyebrow": "Réduction du coût métier",
+        "cost_savings_text": (
+            'Économie estimée : <strong style="color:#4ade80">{pct:.1f} %</strong> '
+            "sur le jeu de test."
+        ),
+        "expander_costs": "Coûts d'erreur asymétriques",
+        "costs_body": """
+| Erreur | Impact | Coût est. |
+|--------|--------|-----------|
+| **Faux négatif** | Inactif classé actif — pas d'alerte | ~10 000 EUR |
+| **Faux positif** | Alerte inutile — revue manuelle (~30 min) | ~60 EUR |
+
+Le classifieur minimise le coût métier attendu, pas l'exactitude brute.
+""",
+        "upload_csv_label": "Déposer un CSV ici",
+    },
+}
+
+_CONFIDENCE_KEYS = {"High": "conf_high", "Medium": "conf_medium", "Low": "conf_low"}
+
+
+def init_i18n() -> None:
+    if "lang" not in st.session_state:
+        default = os.getenv("APP_LANG", "en").lower()
+        st.session_state.lang = default if default in TRANSLATIONS else "en"
+
+
+def t(key: str, **kwargs: Any) -> str:
+    lang = st.session_state.get("lang", "en")
+    text = TRANSLATIONS.get(lang, TRANSLATIONS["en"]).get(
+        key, TRANSLATIONS["en"].get(key, key)
+    )
+    return text.format(**kwargs) if kwargs else text
+
+
+def t_confidence(conf: str) -> str:
+    return t(_CONFIDENCE_KEYS.get(conf, "conf_low"))
+
+
 # ── Page config ──────────────────────────────────────────────────────────────
+init_i18n()
 _page_icon = str(ICON_PATH) if ICON_PATH.exists() else "🛡️"
 st.set_page_config(
-    page_title="RepoGuard — Activity Classifier",
+    page_title=t("page_title"),
     page_icon=_page_icon,
     layout="wide",
     initial_sidebar_state="expanded",
@@ -376,6 +725,42 @@ code, .mono { font-family: 'JetBrains Mono', monospace !important; font-size: 0.
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+/* Header row: title left, language right */
+div[data-testid="stHorizontalBlock"]:has(.hero-header-row) {
+  align-items: center !important;
+  margin-bottom: 0 !important;
+}
+div[data-testid="column"]:has(.lang-switch-col) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+}
+div[data-testid="column"]:has(.lang-switch-col) [data-testid="stRadio"] > div {
+  gap: 0.35rem !important;
+  flex-wrap: nowrap !important;
+}
+div[data-testid="column"]:has(.lang-switch-col) [data-testid="stRadio"] label {
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 0.35rem 0.85rem !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  transition: all 0.15s !important;
+}
+div[data-testid="column"]:has(.lang-switch-col) [data-testid="stRadio"] label:hover {
+  border-color: var(--accent) !important;
+}
+div[data-testid="column"]:has(.lang-switch-col) [data-testid="stRadio"] div[aria-checked="true"] label {
+  background: linear-gradient(135deg, #3b82f6, #6366f1) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+div[data-testid="column"]:has(.lang-switch-col) .lang-switch-col {
+  display: none;
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -481,30 +866,19 @@ def predict_batch_csv(file_bytes: bytes, filename: str) -> pd.DataFrame:
 
 def render_result_alert(res: dict[str, Any]) -> None:
     pred = res["prediction"]
-    prob = res["probability"]
-    conf = res["confidence"]
+    prob = res["probability"] * 100
+    conf = t_confidence(res["confidence"])
     is_inactive = pred == "inactif"
+    conf_key = res["confidence"]
 
-    if is_inactive and conf == "High":
-        st.error(
-            f"**Inactive repository detected** — abandonment probability "
-            f"**{prob * 100:.1f}%**. Review before adopting as a dependency."
-        )
+    if is_inactive and conf_key == "High":
+        st.error(t("alert_inactive_high", prob=prob))
     elif is_inactive:
-        st.warning(
-            f"**Possible inactivity** — probability **{prob * 100:.1f}%** "
-            f"({conf} confidence). Manual review recommended."
-        )
-    elif conf == "Low":
-        st.warning(
-            f"**Active** with borderline signal — probability **{prob * 100:.1f}%** "
-            f"({conf} confidence). Monitor periodically."
-        )
+        st.warning(t("alert_inactive_other", prob=prob, conf=conf))
+    elif conf_key == "Low":
+        st.warning(t("alert_active_borderline", prob=prob, conf=conf))
     else:
-        st.success(
-            f"**Repository appears active** — inactivity probability "
-            f"**{prob * 100:.1f}%** ({conf} confidence)."
-        )
+        st.success(t("alert_active_ok", prob=prob, conf=conf))
 
 
 # ── Sidebar ──────────────────────────────────────────────────────────────────
@@ -517,10 +891,10 @@ with st.sidebar:
     if ICON_PATH.exists():
         st.image(str(ICON_PATH), width=48)
     st.markdown(
-        """
+        f"""
         <div style="margin-bottom:0.5rem">
           <div style="font-size:1.15rem;font-weight:700;color:#f1f5f9">RepoGuard</div>
-          <div style="font-size:0.75rem;color:#64748b">GitHub Activity Classifier</div>
+          <div style="font-size:0.75rem;color:#64748b">{t('sidebar_subtitle')}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -528,47 +902,67 @@ with st.sidebar:
     st.divider()
 
     pill_cls = "" if online else " offline"
-    pill_lbl = "API Online" if online else "API Offline"
+    pill_lbl = t("api_online") if online else t("api_offline")
     st.markdown(
         f'<span class="status-pill{pill_cls}"><span class="status-dot"></span>{pill_lbl}</span>',
         unsafe_allow_html=True,
     )
     if USE_MOCK_API:
-        st.caption("Demo mode — mock predictions enabled")
+        st.caption(t("demo_mode"))
 
     st.markdown(
         f"""
         <div class="glass-card glass-card-sm" style="margin-top:1rem">
-          <div class="card-eyebrow">Model</div>
+          <div class="card-eyebrow">{t('model_label')}</div>
           <div style="font-weight:600;color:#f1f5f9">{model_info.get('model_name', '—')}</div>
           <div style="font-size:0.78rem;color:#94a3b8;margin-top:0.25rem">
-            τ* = {tau} · Recall {m_def.get('recall', 0):.3f}
+            τ* = {tau} · {t('label_recall')} {m_def.get('recall', 0):.3f}
           </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
     st.divider()
-    st.caption("ENSA Tétouan · ML 2025–2026")
+    st.caption(t("footer_caption"))
 
-# ── Header ───────────────────────────────────────────────────────────────────
+# ── Header + language (same row) ─────────────────────────────────────────────
+_header_left, _header_right = st.columns([5, 1], gap="medium", vertical_alignment="center")
+with _header_left:
+    st.markdown('<div class="hero-header-row"></div>', unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div class="fade-up">
+          <h1 style="font-size:1.75rem;font-weight:700;letter-spacing:-0.03em;margin:0;color:#f1f5f9">
+            {t('hero_title')}
+            <span class="hero-badge">{t('hero_badge')}</span>
+          </h1>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+with _header_right:
+    st.markdown('<div class="lang-switch-col"></div>', unsafe_allow_html=True)
+    st.radio(
+        t("lang_label"),
+        options=["en", "fr"],
+        format_func=lambda code: "EN" if code == "en" else "FR",
+        horizontal=True,
+        key="lang",
+        index=0 if st.session_state.get("lang", "en") == "en" else 1,
+        label_visibility="collapsed",
+    )
+
 st.markdown(
-    """
-    <div class="fade-up" style="margin-bottom:0.5rem">
-      <h1 style="font-size:1.75rem;font-weight:700;letter-spacing:-0.03em;margin:0;color:#f1f5f9">
-        Repository Risk Dashboard
-        <span class="hero-badge">Gradient Boosting</span>
-      </h1>
-      <p class="card-sub" style="margin-top:0.5rem;max-width:640px">
-        Predict inactivity risk for open-source repositories using public GitHub metadata.
-      </p>
-    </div>
+    f"""
+    <p class="card-sub fade-up" style="margin:0.5rem 0 0.75rem;max-width:640px">
+      {t('hero_subtitle')}
+    </p>
     """,
     unsafe_allow_html=True,
 )
 
 tab_single, tab_batch, tab_context = st.tabs(
-    ["Single Prediction", "Batch Prediction", "Model Context"]
+    [t("tab_single"), t("tab_batch"), t("tab_context")]
 )
 
 
@@ -579,71 +973,70 @@ with tab_single:
     col_input, col_spacer = st.columns([2, 1], gap="large")
 
     with col_input:
-        st.markdown('<p class="section-label">Input</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="section-label">{t("section_input")}</p>', unsafe_allow_html=True)
         with st.container(border=False):
             st.markdown(
-                '<div class="glass-card" style="margin-bottom:0">'
-                '<div class="card-eyebrow">Repository features</div>'
-                '<p class="card-sub">Enter GitHub metadata to run a single detection.</p>'
-                '</div>',
+                f'<div class="glass-card" style="margin-bottom:0">'
+                f'<div class="card-eyebrow">{t("input_card_title")}</div>'
+                f'<p class="card-sub">{t("input_card_sub")}</p>'
+                f'</div>',
                 unsafe_allow_html=True,
             )
 
             with st.form("single_predict_form", border=False):
                 r1a, r1b, r1c = st.columns(3)
                 with r1a:
-                    stars = st.number_input("Stars", min_value=0, value=8, step=1)
-                    forks = st.number_input("Forks", min_value=0, value=2, step=1)
-                    watchers = st.number_input("Watchers", min_value=0, value=8, step=1)
+                    stars = st.number_input(t("field_stars"), min_value=0, value=8, step=1)
+                    forks = st.number_input(t("field_forks"), min_value=0, value=2, step=1)
+                    watchers = st.number_input(t("field_watchers"), min_value=0, value=8, step=1)
                 with r1b:
-                    open_issues = st.number_input("Open issues", min_value=0, value=1, step=1)
+                    open_issues = st.number_input(t("field_open_issues"), min_value=0, value=1, step=1)
                     contributor_count = st.number_input(
-                        "Contributors", min_value=-1, value=3, step=1,
-                        help="Use -1 if unknown (GitHub caps at 100).",
+                        t("field_contributors"), min_value=-1, value=3, step=1,
+                        help=t("field_contributors_help"),
                     )
-                    size_kb = st.number_input("Size (KB)", min_value=0.0, value=1500.0, step=100.0)
+                    size_kb = st.number_input(t("field_size_kb"), min_value=0.0, value=1500.0, step=100.0)
                 with r1c:
-                    repo_age_days = st.number_input("Age (days)", min_value=30, value=600, step=10)
+                    repo_age_days = st.number_input(t("field_age_days"), min_value=30, value=600, step=10)
                     engagement_rate = st.number_input(
-                        "Engagement rate", min_value=0.0, value=0.016, format="%.5f",
+                        t("field_engagement_rate"), min_value=0.0, value=0.016, format="%.5f",
                     )
                     stars_forks_ratio = st.number_input(
-                        "Stars / forks ratio", min_value=0.0, value=4.0, format="%.2f",
+                        t("field_stars_forks_ratio"), min_value=0.0, value=4.0, format="%.2f",
                     )
 
                 r2a, r2b = st.columns(2)
                 with r2a:
                     avg_issue_response_hours = st.number_input(
-                        "Avg. issue response (h)", min_value=-1.0, value=24.0, step=1.0,
+                        t("field_avg_issue_response"), min_value=-1.0, value=24.0, step=1.0,
                     )
-                    language = st.selectbox("Primary language", LANGUAGES)
+                    language = st.selectbox(t("field_primary_language"), PROG_LANGUAGES)
                 with r2b:
-                    license_name = st.selectbox("License", LICENSES)
-                    st.markdown('<p class="section-label" style="margin-top:0.5rem">Flags</p>',
-                                  unsafe_allow_html=True)
+                    license_name = st.selectbox(t("field_license"), LICENSES)
+                    st.markdown(
+                        f'<p class="section-label" style="margin-top:0.5rem">{t("section_flags")}</p>',
+                        unsafe_allow_html=True,
+                    )
                     f1, f2 = st.columns(2)
                     with f1:
-                        has_description = st.checkbox("Has description", value=True)
-                        has_wiki = st.checkbox("Wiki enabled", value=True)
-                        is_fork = st.checkbox("Is a fork", value=False)
+                        has_description = st.checkbox(t("flag_description"), value=True)
+                        has_wiki = st.checkbox(t("flag_wiki"), value=True)
+                        is_fork = st.checkbox(t("flag_fork"), value=False)
                     with f2:
-                        has_homepage = st.checkbox("Has homepage", value=False)
-                        has_projects = st.checkbox("Projects enabled", value=False)
+                        has_homepage = st.checkbox(t("flag_homepage"), value=False)
+                        has_projects = st.checkbox(t("flag_projects"), value=False)
 
                 st.markdown("<div style='height:0.75rem'></div>", unsafe_allow_html=True)
                 detect = st.form_submit_button(
-                    "Detect", type="primary", use_container_width=True,
+                    t("btn_detect"), type="primary", use_container_width=True,
                 )
 
     with col_spacer:
         st.markdown(
-            """
+            f"""
             <div class="glass-card glass-card-sm fade-up" style="margin-top:1.85rem">
-              <div class="card-eyebrow">How it works</div>
-              <p class="card-sub">
-                The model scores inactivity probability against an optimal threshold
-                (τ* = 5%) tuned for supply-chain risk — favoring recall over precision.
-              </p>
+              <div class="card-eyebrow">{t('how_it_works_title')}</div>
+              <p class="card-sub">{t('how_it_works_body')}</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -651,7 +1044,7 @@ with tab_single:
 
     if detect:
         if not online and not USE_MOCK_API:
-            st.error("API is offline. Start with: `uvicorn app.api:app --port 8000`")
+            st.error(t("api_offline_error"))
         else:
             payload = {
                 "stars": stars,
@@ -675,69 +1068,70 @@ with tab_single:
                 "is_fork": is_fork,
             }
             try:
-                with st.spinner("Running detection model…"):
+                with st.spinner(t("spinner_detect")):
                     res = predict_single(payload)
 
-                st.markdown('<p class="section-label" style="margin-top:1.25rem">Result</p>',
-                            unsafe_allow_html=True)
+                st.markdown(
+                    f'<p class="section-label" style="margin-top:1.25rem">{t("section_result")}</p>',
+                    unsafe_allow_html=True,
+                )
                 render_result_alert(res)
 
                 prob = res["probability"]
                 threshold = res["threshold"]
-                conf = res["confidence"]
                 inactive_prob_pct = prob * 100
-                active_prob_pct = (1 - prob) * 100
+                verdict = t("verdict_inactif") if res["prediction"] == "inactif" else t("verdict_actif")
 
                 m1, m2, m3, m4 = st.columns(4)
-                m1.metric("Inactivity probability", f"{inactive_prob_pct:.1f}%")
-                m2.metric("Decision threshold (τ*)", f"{threshold * 100:.0f}%")
-                m3.metric("Confidence", conf)
+                m1.metric(t("metric_inactivity_prob"), f"{inactive_prob_pct:.1f}%")
+                m2.metric(t("metric_threshold"), f"{threshold * 100:.0f}%")
+                m3.metric(t("metric_confidence"), t_confidence(res["confidence"]))
                 m4.metric(
-                    "Verdict",
-                    res["prediction"].capitalize(),
-                    delta=f"{'Risk' if res['prediction'] == 'inactif' else 'OK'}",
+                    t("metric_verdict"),
+                    verdict,
+                    delta=t("delta_risk") if res["prediction"] == "inactif" else t("delta_ok"),
                     delta_color="inverse" if res["prediction"] == "inactif" else "normal",
                 )
 
             except httpx.HTTPStatusError as e:
-                st.error(f"API error ({e.response.status_code}): {e.response.text}")
+                st.error(t("api_error", code=e.response.status_code, detail=e.response.text))
             except httpx.RequestError as e:
-                st.error(f"Cannot reach API at {API_URL}: {e}")
+                st.error(t("api_unreachable", url=API_URL, err=e))
             except Exception as e:
-                st.error(f"Prediction failed: {e}")
+                st.error(t("prediction_failed", err=e))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — Batch Prediction
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_batch:
-    st.markdown('<p class="section-label">Batch upload</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="section-label">{t("section_batch_upload")}</p>', unsafe_allow_html=True)
 
     upload_col, info_col = st.columns([3, 2], gap="large")
 
     with upload_col:
         with st.container():
             st.markdown(
-                """
+                f"""
                 <div class="glass-card" style="padding-bottom:0.5rem;margin-bottom:0.75rem">
-                  <div class="card-eyebrow">Dataset</div>
-                  <p class="card-sub">Upload a CSV with one repository per row.</p>
+                  <div class="card-eyebrow">{t('batch_dataset_title')}</div>
+                  <p class="card-sub">{t('batch_dataset_sub')}</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
             uploaded = st.file_uploader(
-                "Drop CSV here",
+                t("upload_csv_label"),
                 type=["csv"],
                 label_visibility="collapsed",
-                help="Required columns match the single-prediction form fields.",
+                help=t("batch_upload_help"),
             )
 
     with info_col:
         st.markdown(
-            """
+            f"""
             <div class="glass-card glass-card-sm">
-              <div class="card-eyebrow">Required columns</div>
+              <div class="card-eyebrow">{t('required_columns')}</div>
               <p class="card-sub mono" style="font-size:0.72rem;margin-top:0.5rem">
                 stars, forks, open_issues, watchers, size_kb, repo_age_days,
                 contributor_count, avg_issue_response_hours, engagement_rate,
@@ -755,13 +1149,13 @@ with tab_batch:
             df_preview = pd.read_csv(io.BytesIO(raw_bytes))
 
             st.markdown(
-                f'<p class="section-label">Preview · {len(df_preview):,} rows</p>',
+                f'<p class="section-label">{t("preview_rows", n=len(df_preview))}</p>',
                 unsafe_allow_html=True,
             )
             st.dataframe(df_preview.head(8), use_container_width=True, hide_index=True)
 
             run_batch = st.button(
-                "Run batch detection",
+                t("btn_batch_run"),
                 type="primary",
                 use_container_width=False,
                 key="batch_run",
@@ -769,19 +1163,19 @@ with tab_batch:
 
             if run_batch:
                 if not online and not USE_MOCK_API:
-                    st.error("API is offline. Start the backend first.")
+                    st.error(t("batch_api_offline"))
                 else:
-                    progress = st.progress(0.0, text="Initializing batch pipeline…")
+                    progress = st.progress(0.0, text=t("progress_init"))
 
-                    with st.spinner(f"Processing {len(df_preview):,} repositories…"):
+                    with st.spinner(t("spinner_batch", n=len(df_preview))):
                         if USE_MOCK_API:
                             df_out = mock_predict_batch(df_preview, progress)
                         else:
-                            progress.progress(0.35, text="Uploading to API…")
+                            progress.progress(0.35, text=t("progress_upload"))
                             df_out = predict_batch_csv(raw_bytes, uploaded.name)
-                            progress.progress(1.0, text="Complete")
+                            progress.progress(1.0, text=t("progress_complete"))
 
-                    progress.progress(1.0, text="Batch complete")
+                    progress.progress(1.0, text=t("batch_complete"))
                     time.sleep(0.15)
                     progress.empty()
 
@@ -789,18 +1183,18 @@ with tab_batch:
                     inactifs = int((df_out["prediction"] == "inactif").sum()) if "prediction" in df_out else 0
                     actifs = total - inactifs
 
-                    st.markdown('<p class="section-label">Summary</p>', unsafe_allow_html=True)
+                    st.markdown(f'<p class="section-label">{t("section_summary")}</p>', unsafe_allow_html=True)
                     s1, s2, s3, s4 = st.columns(4)
-                    s1.metric("Total", f"{total:,}")
-                    s2.metric("Active", f"{actifs:,}", f"{actifs / total * 100:.1f}%" if total else "—")
+                    s1.metric(t("metric_total"), f"{total:,}")
+                    s2.metric(t("metric_active"), f"{actifs:,}", f"{actifs / total * 100:.1f}%" if total else "—")
                     s3.metric(
-                        "Inactive", f"{inactifs:,}",
+                        t("metric_inactive"), f"{inactifs:,}",
                         f"{inactifs / total * 100:.1f}%" if total else "—",
                         delta_color="inverse",
                     )
-                    s4.metric("Alert rate", f"{inactifs / total * 100:.1f}%" if total else "—")
+                    s4.metric(t("metric_alert_rate"), f"{inactifs / total * 100:.1f}%" if total else "—")
 
-                    st.markdown('<p class="section-label">Results</p>', unsafe_allow_html=True)
+                    st.markdown(f'<p class="section-label">{t("section_results")}</p>', unsafe_allow_html=True)
 
                     display_cols = [
                         c for c in [
@@ -813,29 +1207,36 @@ with tab_batch:
                     if "probability_inactive" in df_out.columns:
                         sort_df = df_out.sort_values("probability_inactive", ascending=False)
 
+                    table_df = sort_df[display_cols] if display_cols else sort_df
+                    if "confidence" in table_df.columns:
+                        table_df = table_df.copy()
+                        table_df["confidence"] = table_df["confidence"].map(
+                            lambda c: t_confidence(c) if c in _CONFIDENCE_KEYS else c
+                        )
+
                     st.dataframe(
-                        sort_df[display_cols] if display_cols else sort_df,
+                        table_df,
                         use_container_width=True,
                         hide_index=True,
                         column_config={
-                            "stars": st.column_config.NumberColumn("Stars", format="%d"),
-                            "language": st.column_config.TextColumn("Language"),
+                            "stars": st.column_config.NumberColumn(t("col_stars"), format="%d"),
+                            "language": st.column_config.TextColumn(t("col_language")),
                             "probability_inactive": st.column_config.ProgressColumn(
-                                "Inactivity prob.",
+                                t("col_inactivity_prob"),
                                 min_value=0,
                                 max_value=1,
                                 format="%.2f",
                             ),
                             "prediction": st.column_config.TextColumn(
-                                "Prediction",
-                                help="actif = maintained · inactif = at risk",
+                                t("col_prediction"),
+                                help=t("col_prediction_help"),
                             ),
-                            "confidence": st.column_config.TextColumn("Confidence"),
+                            "confidence": st.column_config.TextColumn(t("col_confidence")),
                         },
                     )
 
                     st.download_button(
-                        label="Download results CSV",
+                        label=t("btn_download"),
                         data=df_out.to_csv(index=False).encode("utf-8"),
                         file_name=f"repoguard_{uploaded.name}",
                         mime="text/csv",
@@ -844,7 +1245,7 @@ with tab_batch:
                     )
 
         except Exception as exc:
-            st.error(f"Could not process file: {exc}")
+            st.error(t("file_process_error", err=exc))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -860,74 +1261,49 @@ with tab_context:
 
     with dash_left:
         st.markdown(
-            """
+            f"""
             <div class="glass-card fade-up">
-              <div class="card-eyebrow">Mission</div>
-              <h2 class="card-title">Supply-chain inactivity detection</h2>
-              <p class="card-sub">
-                Abandoned open-source dependencies expose teams to unpatched CVEs and
-                breaking changes. RepoGuard flags repositories using only public GitHub
-                signals — no clone or commit history required.
-              </p>
+              <div class="card-eyebrow">{t('mission_eyebrow')}</div>
+              <h2 class="card-title">{t('mission_title')}</h2>
+              <p class="card-sub">{t('mission_body')}</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        with st.expander("Architecture & feature pipeline", expanded=False):
-            st.markdown(
-                """
-                **Pipeline (CRISP-DM)**
-                1. GitHub REST metadata extraction
-                2. Feature engineering (engagement rate, maturity bins, license/language encoding)
-                3. `HistGradientBoostingClassifier` with `scale_pos_weight`
-                4. Threshold optimization via asymmetric business cost (FN ≫ FP)
+        with st.expander(t("expander_architecture"), expanded=False):
+            st.markdown(t("architecture_body"))
 
-                **Inputs:** 15 raw + derived features per repository.
-
-                **Output:** `actif` / `inactif` + calibrated probability vs. τ* = 0.05.
-                """
-            )
-
-        with st.expander("FAQ", expanded=False):
-            st.markdown(
-                """
-                **Why τ* = 5% and not 50%?**  
-                A missed inactive repo (false negative) costs ~167× more than a false alert.
-                Lowering the threshold maximizes recall for security audits.
-
-                **Can I use this without the API?**  
-                Set `USE_MOCK_API=true` (default) to explore the UI with simulated responses.
-
-                **What file format for batch mode?**  
-                CSV with the same columns as the single-prediction form.
-                """
-            )
+        with st.expander(t("expander_faq"), expanded=False):
+            st.markdown(t("faq_body"))
 
     with dash_right:
-        st.markdown('<p class="section-label">Test-set performance</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="section-label">{t("section_test_perf")}</p>', unsafe_allow_html=True)
 
         row1_a, row1_b, row1_c = st.columns(3)
-        row1_a.metric("Accuracy", f"{metrics_def.get('accuracy', 0):.3f}")
-        row1_b.metric("F1-Score", f"{metrics_def.get('f1', 0):.3f}")
-        row1_c.metric("ROC-AUC", f"{metrics_def.get('roc_auc', 0):.3f}")
+        row1_a.metric(t("metric_accuracy"), f"{metrics_def.get('accuracy', 0):.3f}")
+        row1_b.metric(t("metric_f1"), f"{metrics_def.get('f1', 0):.3f}")
+        row1_c.metric(t("metric_roc_auc"), f"{metrics_def.get('roc_auc', 0):.3f}")
 
         row2_a, row2_b, row2_c = st.columns(3)
-        row2_a.metric("Precision", f"{metrics_def.get('precision', 0):.3f}")
-        row2_b.metric("Recall (τ=0.50)", f"{metrics_def.get('recall', 0):.3f}")
-        row2_c.metric("PR-AUC", f"{metrics_def.get('pr_auc', 0):.3f}")
+        row2_a.metric(t("metric_precision"), f"{metrics_def.get('precision', 0):.3f}")
+        row2_b.metric(t("metric_recall_default"), f"{metrics_def.get('recall', 0):.3f}")
+        row2_c.metric(t("metric_pr_auc"), f"{metrics_def.get('pr_auc', 0):.3f}")
 
-        st.markdown('<p class="section-label" style="margin-top:0.5rem">Deployed threshold (τ*)</p>',
-                    unsafe_allow_html=True)
+        st.markdown(
+            f'<p class="section-label" style="margin-top:0.5rem">{t("section_deployed_threshold")}</p>',
+            unsafe_allow_html=True,
+        )
         o1, o2 = st.columns(2)
-        o1.metric("Optimal τ*", f"{info.get('optimal_threshold', 0.05):.2f}")
-        o2.metric("Recall @ τ*", f"{metrics_opt.get('recall', 0):.3f}")
+        o1.metric(t("metric_optimal_tau"), f"{info.get('optimal_threshold', 0.05):.2f}")
+        o2.metric(t("metric_recall_tau"), f"{metrics_opt.get('recall', 0):.3f}")
 
         if costs:
+            pct = costs.get("cost_reduction_pct", 85.4)
             st.markdown(
                 f"""
                 <div class="glass-card glass-card-sm" style="margin-top:0.75rem">
-                  <div class="card-eyebrow">Business cost reduction</div>
+                  <div class="card-eyebrow">{t('cost_reduction_eyebrow')}</div>
                   <div style="display:flex;align-items:baseline;gap:0.6rem;flex-wrap:wrap">
                     <span style="color:#f87171;text-decoration:line-through;font-size:0.9rem">
                       {costs.get('cost_default', 0):,.0f} EUR
@@ -938,22 +1314,12 @@ with tab_context:
                     </span>
                   </div>
                   <p class="card-sub" style="margin-top:0.5rem">
-                    Estimated savings: <strong style="color:#4ade80">
-                    {costs.get('cost_reduction_pct', 85.4):.1f}%</strong> on held-out test set.
+                    {t('cost_savings_text', pct=pct)}
                   </p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-        with st.expander("Asymmetric error costs", expanded=False):
-            st.markdown(
-                """
-                | Error | Impact | Est. cost |
-                |-------|--------|-----------|
-                | **False negative** | Inactive repo marked active — no alert | ~10,000 EUR |
-                | **False positive** | Unnecessary manual review (~30 min) | ~60 EUR |
-
-                The classifier is tuned to minimize expected business cost, not raw accuracy.
-                """
-            )
+        with st.expander(t("expander_costs"), expanded=False):
+            st.markdown(t("costs_body"))
