@@ -463,7 +463,7 @@ html, body, [class*="css"] {
   max-width: 1180px !important;
 }
 
-#MainMenu, footer, header { visibility: hidden; height: 0; }
+#MainMenu, footer { visibility: hidden; height: 0; }
 [data-testid="stHeader"] { background: transparent !important; }
 
 /* Sidebar glass */
