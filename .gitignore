@@ -37,8 +37,10 @@ Thumbs.db
 # Ne pas push les données transformées
 data/processed/
 
-# Ne pas push les modèles et pipelines compilés
-models/
+models/best_pipeline_before_tuning.joblib
+models/tuned_pipeline.joblib
+models/modeling_results.json
+models/tuning_metadata.json
 
 # Ignorer le PDF des consignes et les archives
 *.pdf
