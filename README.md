@@ -61,7 +61,7 @@ L'interface utilisateur comporte trois sections principales permettant d'interag
 
 ### 🐳 Option A : Démarrage avec Docker (Recommandé)
 
-Docker Compose orchestre automatiquement le conteneur API FastAPI (port 8000) et le conteneur UI Streamlit (port 8501) sur le même réseau virtuel.
+Docker Compose orchestre automatiquement le conteneur API FastAPI (port 8000) et le conteneur UI Streamlit (port 8500) sur le même réseau virtuel.
 
 1. Installez Docker et Docker Compose.
 2. Exécutez la commande suivante à la racine du projet :
@@ -69,7 +69,7 @@ Docker Compose orchestre automatiquement le conteneur API FastAPI (port 8000) et
    docker-compose up --build
    ```
 3. Accédez aux services :
-   - **Interface Utilisateur (Streamlit) :** [http://localhost:8501](http://localhost:8501)
+   - **Interface Utilisateur (Streamlit) :** [http://localhost:8500](http://localhost:8500)
    - **API REST (Documentation Swagger) :** [http://localhost:8000/docs](http://localhost:8000/docs)
    - **Vérification de l'état (Healthcheck) :** [http://localhost:8000/health](http://localhost:8000/health)
 
@@ -89,7 +89,7 @@ Docker Compose orchestre automatiquement le conteneur API FastAPI (port 8000) et
    ```
 3. **Démarrer l'Interface Utilisateur :**
    ```bash
-   streamlit run app/ui.py --server.port 8501 --server.address 127.0.0.1
+   streamlit run app/ui.py --server.port 8500 --server.address 127.0.0.1
    ```
 
 ---

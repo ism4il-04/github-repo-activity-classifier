@@ -18,7 +18,7 @@ import pandas as pd
 import streamlit as st
 
 # ── Configuration ────────────────────────────────────────────────────────────
-USE_MOCK_API = os.getenv("USE_MOCK_API", "true").lower() in ("1", "true", "yes")
+USE_MOCK_API = os.getenv("USE_MOCK_API", "false").lower() in ("1", "true", "yes")
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 ICON_PATH = Path(__file__).parent / "repoguard_icon.png"
 

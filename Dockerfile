@@ -24,9 +24,9 @@ COPY app/ /app/app/
 COPY models/ /app/models/
 COPY data/ /app/data/
 
-# Expose FastAPI and Streamlit standard ports
+# Railway routes traffic to the port in $PORT — must match what uvicorn binds to
+ENV PORT=8000
 EXPOSE 8000
-EXPOSE 8501
 
-# Default command launches the API. In docker-compose, this will be run separately for api and ui.
-CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use sh -c so ${PORT} is always expanded (Railway injects PORT at runtime)
+CMD ["sh", "-c", "echo \"[start] PORT=${PORT:-8000}\" && exec uvicorn app.api:app --host 0.0.0.0 --port ${PORT:-8000}"]
