@@ -19,6 +19,13 @@ github-repo-activity-classifier/
 ├── data/
 │   ├── processed/             # Splits de données (train.csv, validation.csv, test.csv)
 │   └── dataset.csv            # Dataset complet (~15 000 lignes)
+├── docs/
+│   ├── screenshots/           # Captures d'écran de l'interface Streamlit
+│   │   ├── tab1_single.png
+│   │   ├── tab2_batch.png
+│   │   └── tab3_info.png
+│   ├── ensate_logo.png        # Logo ENSA Tétouan
+│   └── main.tex               # Rapport LaTeX du projet
 ├── models/
 │   ├── final_model.joblib     # Pipeline complet (preprocessor + GradientBoosting)
 │   └── final_model_metadata.json # Seuil critique (0.05) et métriques de performance
@@ -29,6 +36,8 @@ github-repo-activity-classifier/
 │   ├── 04_modeling.ipynb      # Phase 3: Modélisation et CV
 │   ├── 05_tuning.ipynb        # Phase 3: GridSearch/RandomSearch
 │   └── 06_evaluation.ipynb    # Phase 3: Évaluation et Seuil Optimal
+├── src/
+│   └── data_collection.py     # Script de collecte via l'API GitHub
 ├── tests/
 │   └── test_api.py            # Tests unitaires Pytest pour l'API REST
 ├── .dockerignore
@@ -50,10 +59,13 @@ L'interface utilisateur comporte trois sections principales permettant d'interag
 ### Captures d'Écran de l'Interface
 
 #### 🔍 Formulaire de Prédiction Unitaire
-![Prediction Form UI Mockup](file:///C:/Users/PC/.gemini/antigravity-ide/brain/83205a1c-3eea-460f-90cb-b8a5a5e29ca5/ui_predict_form_1780261382225.png)
+![Prediction Form UI Mockup](./docs/screenshots/tab1_single.png)
 
 #### 📁 Résumé Statistique du Traitement par Lot
-![Batch Prediction UI Mockup](file:///C:/Users/PC/.gemini/antigravity-ide/brain/83205a1c-3eea-460f-90cb-b8a5a5e29ca5/ui_batch_mode_1780261451863.png)
+![Batch Prediction UI Mockup](./docs/screenshots/tab2_batch.png)
+
+### 📊 Informations sur le Modèle
+![Model Info UI Mockup](./docs/screenshots/tab3_info.png)
 
 ---
 

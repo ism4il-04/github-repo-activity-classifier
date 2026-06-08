@@ -45,3 +45,20 @@ models/tuning_metadata.json
 # Ignorer le PDF des consignes et les archives
 *.pdf
 *.zip
+
+# --- Markdown de travail à la racine ---
+# Ignorer tous les .md sauf les essentiels
+/*.md
+!README.md
+!DATASET.md
+!cadrage.md
+!preprocessing_decisions.md
+
+# --- LaTeX build artifacts (docs/) ---
+docs/*.aux
+docs/*.log
+docs/*.lof
+docs/*.lot
+docs/*.out
+docs/*.toc
+docs/*.synctex.gz

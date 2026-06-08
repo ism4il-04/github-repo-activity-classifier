@@ -19,3 +19,9 @@ venv
 data/raw_cache.json
 models/best_pipeline_before_tuning.joblib
 models/tuned_pipeline.joblib
+
+# Documentation & reports (not needed at runtime)
+docs/
+notebooks/
+*.md
+LICENSE
