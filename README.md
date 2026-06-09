@@ -42,6 +42,7 @@ github-repo-activity-classifier/
 │   └── test_api.py            # Tests unitaires Pytest pour l'API REST
 ├── .dockerignore
 ├── docker-compose.yml         # Orchestration multi-conteneur (API et UI)
+├── .env.example               # Exemple de variables d'environnement (GITHUB_TOKEN, etc.)
 ├── Dockerfile                 # Conteneurisation de l'API et de l'UI (python:3.11-slim)
 ├── requirements.txt           # Dépendances figées du projet
 └── README.md
@@ -76,11 +77,15 @@ L'interface utilisateur comporte trois sections principales permettant d'interag
 Docker Compose orchestre automatiquement le conteneur API FastAPI (port 8000) et le conteneur UI Streamlit (port 8500) sur le même réseau virtuel.
 
 1. Installez Docker et Docker Compose.
-2. Exécutez la commande suivante à la racine du projet :
+2. Copiez le fichier d'exemple et configurez vos variables (notamment `GITHUB_TOKEN`) :
    ```bash
-   docker-compose up --build
+   cp .env.example .env
    ```
-3. Accédez aux services :
+3. Exécutez la commande suivante à la racine du projet :
+   ```bash
+   docker compose up --build
+   ```
+4. Accédez aux services :
    - **Interface Utilisateur (Streamlit) :** [http://localhost:8500](http://localhost:8500)
    - **API REST (Documentation Swagger) :** [http://localhost:8000/docs](http://localhost:8000/docs)
    - **Vérification de l'état (Healthcheck) :** [http://localhost:8000/health](http://localhost:8000/health)
@@ -95,11 +100,15 @@ Docker Compose orchestre automatiquement le conteneur API FastAPI (port 8000) et
    source venv/Scripts/activate  # Sur Windows: venv\Scripts\activate
    pip install -r requirements.txt
    ```
-2. **Démarrer l'API REST :**
+2. Configurez vos variables d'environnement :
+   ```bash
+   cp .env.example .env
+   ```
+3. **Démarrer l'API REST :**
    ```bash
    uvicorn app.api:app --host 127.0.0.1 --port 8000 --reload
    ```
-3. **Démarrer l'Interface Utilisateur :**
+4. **Démarrer l'Interface Utilisateur :**
    ```bash
    streamlit run app/ui.py --server.port 8500 --server.address 127.0.0.1
    ```

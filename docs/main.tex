@@ -1186,6 +1186,9 @@ python -m pytest tests/ -v
     \texttt{MODEL\_PATH} & \texttt{models/final\_model.joblib} & Chemin vers le pipeline sérialisé \\
     \texttt{METADATA\_PATH} & \texttt{models/final\_model\_metadata.json} & Chemin vers les métadonnées \\
     \texttt{API\_URL} & \texttt{http://localhost:8000} & URL de l'API (côté Streamlit) \\
+    \texttt{GITHUB\_TOKEN} & \textit{Aucune} & Token pour contourner les limites de l'API GitHub \\
+    \texttt{USE\_MOCK\_API} & \texttt{false} & Activer pour simuler l'API Backend \\
+    \texttt{PORT} & \texttt{8500} & Port de l'interface Streamlit \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -1497,6 +1500,7 @@ github-repo-activity-classifier/
 |   `-- test_api.py
 |-- Dockerfile
 |-- docker-compose.yml
+|-- .env.example           # Variables d'environnement
 |-- requirements.txt
 `-- README.md
 \end{lstlisting}

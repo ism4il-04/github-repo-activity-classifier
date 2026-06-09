@@ -12,6 +12,9 @@ import random
 import time
 from pathlib import Path
 from typing import Any
+from dotenv import load_dotenv
+
+load_dotenv()
 
 import httpx
 import pandas as pd
@@ -221,6 +224,11 @@ CSV with the same columns as the single-prediction form.
 The classifier is tuned to minimize expected business cost, not raw accuracy.
 """,
         "upload_csv_label": "Drop CSV here",
+        "github_token": "GitHub Token (Optional)",
+        "github_url_label": "GitHub Repository URL",
+        "btn_fetch": "Fetch from GitHub",
+        "fetch_success": "Successfully fetched {repo}!",
+        "fetch_error": "Could not fetch {repo}: {err}",
     },
     "fr": {
         "page_title": "RepoGuard — Classificateur d'activité",
@@ -384,6 +392,11 @@ CSV avec les mêmes colonnes que le formulaire unitaire.
 Le classifieur minimise le coût métier attendu, pas l'exactitude brute.
 """,
         "upload_csv_label": "Déposer un CSV ici",
+        "github_token": "Token GitHub (Optionnel)",
+        "github_url_label": "URL du dépôt GitHub",
+        "btn_fetch": "Importer depuis GitHub",
+        "fetch_success": "Importation réussie pour {repo} !",
+        "fetch_error": "Impossible d'importer {repo} : {err}",
     },
 }
 
@@ -777,6 +790,104 @@ def _confidence_label(prob: float, threshold: float) -> str:
     return "Low"
 
 
+
+import datetime
+
+def fetch_github_repo(url: str, token: str):
+    import re
+    match = re.search(r"github\.com/([^/]+)/([^/]+)", url)
+    if not match:
+        return "Invalid GitHub URL format."
+    owner, repo_name = match.groups()
+    repo_name = repo_name.removesuffix(".git")
+    full_name = f"{owner}/{repo_name}"
+
+    headers = {"Accept": "application/vnd.github+json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    
+    try:
+        r = httpx.get(f"https://api.github.com/repos/{full_name}", headers=headers, timeout=10.0)
+        if r.status_code == 404:
+            return "Repository not found or private."
+        elif r.status_code == 403:
+            return "API Rate limit exceeded. Please provide a GitHub token."
+        r.raise_for_status()
+        repo = r.json()
+
+        stars = repo.get("stargazers_count", 0)
+        forks = repo.get("forks_count", 0)
+        watchers = repo.get("watchers_count", 0)
+        open_issues = repo.get("open_issues_count", 0)
+        size_kb = float(repo.get("size", 0))
+
+        created_at_str = repo.get("created_at")
+        if not created_at_str:
+            return "Missing created_at field."
+        created_at = datetime.datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
+        now = datetime.datetime.now(datetime.timezone.utc)
+        repo_age_days = max((now - created_at).days, 30)
+
+        engagement_rate = round((stars + forks) / max(repo_age_days, 1), 4)
+        stars_forks_ratio = round(stars / max(forks, 1), 2)
+
+        language = repo.get("language") or "Other"
+        if language not in PROG_LANGUAGES:
+            language = "Other"
+            
+        license_name = repo["license"]["name"] if repo.get("license") else "Other"
+        found_license = "Other"
+        for lic in LICENSES:
+            if lic in license_name or license_name in lic:
+                found_license = lic
+                break
+        
+        has_description = bool(repo.get("description"))
+        has_homepage = bool(repo.get("homepage"))
+        has_wiki = bool(repo.get("has_wiki", False))
+        has_projects = bool(repo.get("has_projects", False))
+        is_fork = bool(repo.get("fork", False))
+
+        contributor_count = -1
+        try:
+            r_c = httpx.get(f"https://api.github.com/repos/{full_name}/contributors?per_page=100&anon=true", headers=headers, timeout=5.0)
+            if r_c.status_code == 200:
+                contributor_count = len(r_c.json())
+        except Exception:
+            pass
+
+        avg_issue_response_hours = -1.0
+        try:
+            r_i = httpx.get(f"https://api.github.com/repos/{full_name}/issues?state=closed&per_page=20", headers=headers, timeout=5.0)
+            if r_i.status_code == 200:
+                data = r_i.json()
+                deltas = []
+                for issue in data:
+                    if "pull_request" in issue:
+                        continue
+                    c_at = issue.get("created_at")
+                    cl_at = issue.get("closed_at")
+                    if c_at and cl_at:
+                        t0 = datetime.datetime.fromisoformat(c_at.replace("Z", "+00:00"))
+                        t1 = datetime.datetime.fromisoformat(cl_at.replace("Z", "+00:00"))
+                        deltas.append((t1 - t0).total_seconds() / 3600)
+                if deltas:
+                    avg_issue_response_hours = round(sum(deltas) / len(deltas), 2)
+        except Exception:
+            pass
+
+        return {
+            "stars": stars, "forks": forks, "watchers": watchers, "open_issues": open_issues,
+            "size_kb": size_kb, "repo_age_days": repo_age_days, "engagement_rate": engagement_rate,
+            "stars_forks_ratio": stars_forks_ratio, "language": language, "license_name": found_license,
+            "has_description": has_description, "has_homepage": has_homepage, "has_wiki": has_wiki,
+            "has_projects": has_projects, "is_fork": is_fork, "contributor_count": contributor_count,
+            "avg_issue_response_hours": avg_issue_response_hours
+        }
+
+    except Exception as e:
+        return str(e)
+
 def mock_predict_single(payload: dict[str, Any]) -> dict[str, Any]:
     time.sleep(0.85)
     random.seed(hash(tuple(sorted(payload.items()))) % (2**32))
@@ -922,6 +1033,7 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
+
     st.divider()
     st.caption(t("footer_caption"))
 
@@ -973,10 +1085,24 @@ with tab_single:
     col_input, col_spacer = st.columns([2, 1], gap="large")
 
     with col_input:
+
         st.markdown(f'<p class="section-label">{t("section_input")}</p>', unsafe_allow_html=True)
         with st.container(border=False):
+            with st.form("github_fetch_form", border=False):
+                gh_url = st.text_input(t("github_url_label"), placeholder="https://github.com/owner/repo")
+                fetch_btn = st.form_submit_button(t("btn_fetch"), type="secondary")
+            if fetch_btn and gh_url:
+                with st.spinner("Fetching..."):
+                    res = fetch_github_repo(gh_url, os.getenv("GITHUB_TOKEN", ""))
+                    if isinstance(res, dict):
+                        st.session_state.update(res)
+                        st.success(t("fetch_success", repo=gh_url))
+                    else:
+                        st.error(t("fetch_error", repo=gh_url, err=res))
+            
             st.markdown(
                 f'<div class="glass-card" style="margin-bottom:0">'
+
                 f'<div class="card-eyebrow">{t("input_card_title")}</div>'
                 f'<p class="card-sub">{t("input_card_sub")}</p>'
                 f'</div>',
@@ -986,45 +1112,47 @@ with tab_single:
             with st.form("single_predict_form", border=False):
                 r1a, r1b, r1c = st.columns(3)
                 with r1a:
-                    stars = st.number_input(t("field_stars"), min_value=0, value=8, step=1)
-                    forks = st.number_input(t("field_forks"), min_value=0, value=2, step=1)
-                    watchers = st.number_input(t("field_watchers"), min_value=0, value=8, step=1)
+                    stars = st.number_input(t("field_stars"), min_value=0, value=int(st.session_state.get("stars", 8)), step=1)
+                    forks = st.number_input(t("field_forks"), min_value=0, value=int(st.session_state.get("forks", 2)), step=1)
+                    watchers = st.number_input(t("field_watchers"), min_value=0, value=int(st.session_state.get("stars", 8)), step=1)
                 with r1b:
-                    open_issues = st.number_input(t("field_open_issues"), min_value=0, value=1, step=1)
+                    open_issues = st.number_input(t("field_open_issues"), min_value=0, value=int(st.session_state.get("open_issues", 1)), step=1)
                     contributor_count = st.number_input(
-                        t("field_contributors"), min_value=-1, value=3, step=1,
+                        t("field_contributors"), min_value=-1, value=int(st.session_state.get("contributor_count", 3)), step=1,
                         help=t("field_contributors_help"),
                     )
-                    size_kb = st.number_input(t("field_size_kb"), min_value=0.0, value=1500.0, step=100.0)
+                    size_kb = st.number_input(t("field_size_kb"), min_value=0.0, value=float(st.session_state.get("size_kb", 1500.0)), step=100.0)
                 with r1c:
-                    repo_age_days = st.number_input(t("field_age_days"), min_value=30, value=600, step=10)
+                    repo_age_days = st.number_input(t("field_age_days"), min_value=30, value=int(st.session_state.get("repo_age_days", 600)), step=10)
                     engagement_rate = st.number_input(
-                        t("field_engagement_rate"), min_value=0.0, value=0.016, format="%.5f",
+                        t("field_engagement_rate"), min_value=0.0, value=float(st.session_state.get("engagement_rate", 0.016)), format="%.5f",
                     )
                     stars_forks_ratio = st.number_input(
-                        t("field_stars_forks_ratio"), min_value=0.0, value=4.0, format="%.2f",
+                        t("field_stars_forks_ratio"), min_value=0.0, value=float(st.session_state.get("stars_forks_ratio", 4.0)), format="%.2f",
                     )
 
                 r2a, r2b = st.columns(2)
                 with r2a:
                     avg_issue_response_hours = st.number_input(
-                        t("field_avg_issue_response"), min_value=-1.0, value=24.0, step=1.0,
+                        t("field_avg_issue_response"), min_value=-1.0, value=float(st.session_state.get("avg_issue_response_hours", 24.0)), step=1.0,
                     )
-                    language = st.selectbox(t("field_primary_language"), PROG_LANGUAGES)
+                    idx_lang = PROG_LANGUAGES.index(st.session_state.get("language", "Python")) if st.session_state.get("language", "Python") in PROG_LANGUAGES else 0
+                    language = st.selectbox(t("field_primary_language"), PROG_LANGUAGES, index=idx_lang)
                 with r2b:
-                    license_name = st.selectbox(t("field_license"), LICENSES)
+                    idx_lic = LICENSES.index(st.session_state.get("license_name", "MIT License")) if st.session_state.get("license_name", "MIT License") in LICENSES else 0
+                    license_name = st.selectbox(t("field_license"), LICENSES, index=idx_lic)
                     st.markdown(
                         f'<p class="section-label" style="margin-top:0.5rem">{t("section_flags")}</p>',
                         unsafe_allow_html=True,
                     )
                     f1, f2 = st.columns(2)
                     with f1:
-                        has_description = st.checkbox(t("flag_description"), value=True)
+                        has_description = st.checkbox(t("flag_description"), value=bool(st.session_state.get("has_description", True)))
                         has_wiki = st.checkbox(t("flag_wiki"), value=True)
-                        is_fork = st.checkbox(t("flag_fork"), value=False)
+                        is_fork = st.checkbox(t("flag_fork"), value=bool(st.session_state.get("is_fork", False)))
                     with f2:
-                        has_homepage = st.checkbox(t("flag_homepage"), value=False)
-                        has_projects = st.checkbox(t("flag_projects"), value=False)
+                        has_homepage = st.checkbox(t("flag_homepage"), value=bool(st.session_state.get("has_homepage", False)))
+                        has_projects = st.checkbox(t("flag_projects"), value=bool(st.session_state.get("has_projects", False)))
 
                 st.markdown("<div style='height:0.75rem'></div>", unsafe_allow_html=True)
                 detect = st.form_submit_button(
