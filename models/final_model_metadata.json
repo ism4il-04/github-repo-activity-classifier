@@ -2,33 +2,33 @@
   "pipeline_path": "models/final_model.joblib",
   "optimal_threshold": 0.05,
   "default_threshold": 0.5,
-  "model_name": "GradientBoosting",
+  "model_name": "Gradient Boosting",
   "strategy": "class_weight",
   "best_params": {
-    "classifier__subsample": "1.0",
-    "classifier__n_estimators": "300",
-    "classifier__min_samples_leaf": "1",
+    "classifier__subsample": "0.8",
+    "classifier__n_estimators": "200",
+    "classifier__min_samples_leaf": "5",
     "classifier__max_depth": "3",
     "classifier__learning_rate": "0.1"
   },
   "test_metrics_default": {
-    "recall": 0.8041543026706232,
-    "precision": 0.8287461773700305,
-    "f1": 0.8162650602409639,
-    "roc_auc": 0.9796814238359747,
-    "pr_auc": 0.8998789337874148,
-    "accuracy": 0.9457777777777778
+    "recall": 0.8130563798219584,
+    "precision": 0.8379204892966361,
+    "f1": 0.8253012048192772,
+    "roc_auc": 0.9787119521127503,
+    "pr_auc": 0.9000747984936229,
+    "accuracy": 0.9484444444444444
   },
   "test_metrics_optimal": {
     "recall": 0.9762611275964391,
-    "precision": 0.5384615384615384,
-    "f1": 0.6940928270042194,
-    "total_cost": 96920.0
+    "precision": 0.5332252836304701,
+    "f1": 0.689727463312369,
+    "total_cost": 97280.0
   },
   "cost_matrix": {
     "FN_cost": 10000,
     "FP_cost": 60,
-    "cost_default": 663360.0,
-    "cost_optimal": 96920.0
+    "cost_default": 633180.0,
+    "cost_optimal": 97280.0
   }
 }
